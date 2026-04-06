@@ -141,11 +141,11 @@ function REST_API_Application-Specific-Action {
 	# For this application, we are just using a few members
 	# Because JSON data isn't always guaranteed, we use this helper function to safely get the value
 	$categoryId = Get-MemberValueFromUnknownObject -objectWithUnknownMembers $Global:REST_API_clientActionData -targetMember_nameString 'categoryId'
-	$categoryName = Get-MemberValueFromUnknownObject -objectWithUnknownMembers $Global:REST_API_Action_Category -targetMember_nameString 'categoryName'
+	if ($categoruId -ne $null) {$categoryName = $Global:REST_API_Actions[$categoryId].categoryName}
 	# Another way to get data from the Tikfinity data is to use the available placeholder substitution logic. {{placeholder}}
 	$actionId_with_placeholder = '{{actionId}}'
 	$actionId = Replace-PlaceholdersWithValues -stringContainingPlaceholders $actionId_with_placeholder -objectWithValues $Global:REST_API_clientActionData
-	$actionName = Get-MemberValueFromUnknownObject -objectWithUnknownMembers $Global:REST_API_Action -targetMember_nameString 'actionName'
+	if ($actionId -ne $null) { $actionName = $Global:REST_API_Action.actionName }
 	# where this has EXTREME value, is to pass TikFinity values to GZDoom inside of commandString
 	#for example:
 	# action: applicationData = 'echo "Thank you for the gift of {{context.coins}}, dear {{context.nickname}}!"
@@ -169,9 +169,9 @@ function REST_API_Application-Specific-Action {
 	$context_tikfinityUsername = Get-MemberValueFromUnknownObject -objectWithUnknownMembers $Global:REST_API_clientActionData -targetMember_nameString 'context.tikfinityUsername'
 
 	if ($categoryId -ne $null) { $null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_s_TF_categoryId' -cvarValue $categoryId }
-	if ($categoryName -ne $null) {$null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_n_TF_categoryName' -cvarValue $categoryName}
+	if ($categoryName -ne $null) {$null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_s_TF_categoryName' -cvarValue $categoryName}
 	if ($actionId -ne $null) { $null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_s_TF_actionId' -cvarValue $actionId }
-	if ($actionName -ne $null) {$null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_n_TF_actionName' -cvarValue $actionName}
+	if ($actionName -ne $null) {$null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_s_TF_actionName' -cvarValue $actionName}
 	if ($context_userID -ne $null) { $null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_s_TF_userID' -cvarValue $context_userID }
 	if ($context_username -ne $null) { $null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_s_TF_username' -cvarValue $context_username}
 	if ($context_nickname -ne $null) { $null = GZDoom_PipeAPI_CVAR_SET -cvarName 'CV_s_TF_nickname' -cvarValue $context_nickname}
