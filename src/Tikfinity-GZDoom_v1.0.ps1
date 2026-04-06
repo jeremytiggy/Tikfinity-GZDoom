@@ -141,7 +141,7 @@ function REST_API_Application-Specific-Action {
 	# For this application, we are just using a few members
 	# Because JSON data isn't always guaranteed, we use this helper function to safely get the value
 	$categoryId = Get-MemberValueFromUnknownObject -objectWithUnknownMembers $Global:REST_API_clientActionData -targetMember_nameString 'categoryId'
-	if ($categoruId -ne $null) {$categoryName = $Global:REST_API_Actions[$categoryId].categoryName}
+	if ($categoryId -ne $null) {$categoryName = $Global:REST_API_Actions[$categoryId].categoryName}
 	# Another way to get data from the Tikfinity data is to use the available placeholder substitution logic. {{placeholder}}
 	$actionId_with_placeholder = '{{actionId}}'
 	$actionId = Replace-PlaceholdersWithValues -stringContainingPlaceholders $actionId_with_placeholder -objectWithValues $Global:REST_API_clientActionData
