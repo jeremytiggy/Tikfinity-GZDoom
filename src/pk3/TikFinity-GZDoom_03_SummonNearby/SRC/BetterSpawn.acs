@@ -1,0 +1,183 @@
+// BetterSpawn v1.10
+//#library "BetterSpawn"
+//#include "zcommon.acs"
+
+// Radius of the Actor Class
+// Force Spawn an actor of the Classname, get it's radius, delete it
+// Return values >=20, -1 is error
+function int f_GetActorClassnameRadius(str classname)
+{
+    bool debug = GetCVAR("CV_b_SummonNearby_debug");
+	bool verbose = GetCVAR("CV_b_SummonNearby_verbose") && debug; 															if (verbose) Log(s:"f_GetActorClassnameRadius(",s:classname,s:")");
+	int f_Actor_radius = -1.0;	
+	int tid = UniqueTID();																									if (verbose) Log(s:"tid: ",d:tid);
+	int countOfThingsSpawned = SpawnForced(classname, 0.0, 0.0, 0.0, tid);													if (verbose) Log(s:"SpawnForced(",s:classname,s:", 0.0, 0.0, 0.0, ",d:tid,s:"); countOfThingsSpawned: ",d:countOfThingsSpawned);
+	if (countOfThingsSpawned > 0)
+	{		
+		f_Actor_radius = GetActorProperty(tid, APROP_Radius); 																if (verbose) Log(s:"GetActorProperty(",d:tid,s:", APROP_Radius) = ",f:GetActorProperty(tid, APROP_Radius));		
+		if (f_Actor_radius < 20.0) f_Actor_radius = 20.0;																	if (verbose) Log(s:"f_Actor_radius: ",f:f_Actor_radius);		
+		Thing_Remove(tid);
+	}
+    return f_Actor_radius;
+}
+
+int f_SpawnedActor_X;
+int f_SpawnedActor_Y;
+int f_SpawnedActor_Z;
+bool b_SpawnedActor_Success;
+int n_SpawnedActor_TID;
+function int BetterSpawn(str s_Actor_classname, int f_Actor_Target_x, int f_Actor_Target_y, int f_Actor_Target_z, int f_Actor_Target_Vector, int f_Actor_Target_Radius_Offset, bool b_Actor_FaceAwayFrom_Target, int spawn_Actor_TID, bool b_TeleportFog)
+{
+	bool debug = GetCVAR("CV_b_SummonNearby_debug");
+	bool verbose = GetCVAR("CV_b_SummonNearby_verbose") && debug; 															if (verbose) Log(s:"BetterSpawn(",s:s_Actor_classname,s:", ", f:f_Actor_Target_x,s:", ",f:f_Actor_Target_y,s:", ",f:f_Actor_Target_z,s:", ",f:f_Actor_Target_Vector,s:", ", f:f_Actor_Target_Radius_Offset,s:", ", d:b_Actor_FaceAwayFrom_Target,s:", ", d:spawn_Actor_TID,s:", ", d:b_TeleportFog,s:")");
+
+	// If the classname is empty, return -1
+	if (s_Actor_classname == "") return -1;
+
+	// Get the radius of the Actor to be spawned in	
+	int f_Actor_radius = f_GetActorClassnameRadius(s_Actor_classname);													if (verbose) Log(s:"Actor Info - Class: ",s:s_Actor_classname,s:", Radius: ",f:f_Actor_radius,s:"f");	
+	// exit immediately on radius error
+	if (f_Actor_radius <= -1.0) return -2;  
+	// Initial distance from Target Point to start trying to Spawn the Actor
+	int f_Actor_Diameter = FixedMul(f_Actor_Radius, 2.0);														if (verbose) Log(s:"Actor Diameter: ",f:f_Actor_Diameter);
+	if (f_Actor_Target_Radius_Offset < f_Actor_Diameter) f_Actor_Target_Radius_Offset = f_Actor_Diameter;
+	int f_Radius = f_Actor_radius + f_Actor_Target_Radius_Offset; 												if (verbose) Log(s:"Radial Offset from Point: ",f:f_Actor_radius,s:"f + ",f:f_Actor_Target_Radius_Offset,s:"f = ",f:f_Radius,s:"f");
+	int f_Circumference = FixedMul(6.2831853, f_Radius);														if (verbose) Log(s:"Circumference of Radial Spawn Zone: ",f:f_Circumference);
+	
+	int f_ArcRatio = FixedDiv(f_Actor_Diameter, f_Circumference);												if (verbose) Log(s:"Actor Radius to Circumference Ratio: ",f:f_ArcRatio);
+	// Calculate AngleByte step size
+	// https://zdoom.org/wiki/Definitions#Byte_angles
+	int f_AngleBytes_per_Segment = FixedMul(f_ArcRatio, 256.0);													if (verbose) Log(s:"AngleBytes per Segment: ",f:f_AngleBytes_per_Segment,s:"f");
+	int n_AngleBytes_per_Segment = f_AngleBytes_per_Segment >> 16;												if (verbose) Log(s:"AngleBytes per Segment: ",d:n_AngleBytes_per_Segment,s:"d");
+	int n_AngleByte_Increment = n_AngleBytes_per_Segment;														if (verbose) Log(s:"AngleByte Increment per Unsuccessful Spawn: ",d:n_AngleByte_Increment,s:"d");
+
+	// if the value of the TID argument is <=0, create a new TID
+	if (spawn_Actor_TID <= 0) spawn_Actor_TID = UniqueTID();													if (verbose) Log(s:"spawn_Actor_TID: ",d:spawn_Actor_TID);
+
+	// Actor Vector Angle
+	// The angle is where they are looking
+	// References: https://zdoom.org/wiki/GetActorAngle
+	// Example: if the vector is 2o'clock, the actor will look towards 8o'clock if true
+	int n_Spawn_vector_initial = f_Actor_Target_Vector >> 8;													
+	int n_Spawn_vector = n_Spawn_vector_initial;																if (verbose) Log(s:"n_Spawn_vector: ",d:n_Spawn_vector);
+	int n_Actor_Facing_Vector_Initial;
+	if (b_Actor_FaceAwayFrom_Target) n_Actor_Facing_Vector_Initial = (n_Spawn_vector_initial + 128) % 256;
+	else n_Actor_Facing_Vector_Initial = n_Spawn_vector_initial;
+	int n_Facing_Vector = n_Actor_Facing_Vector_Initial;														if (verbose) Log(s:"n_Facing_vector: ",d:n_Facing_vector);
+
+	
+	// Initialize return values
+	f_SpawnedActor_X = 0;
+	f_SpawnedActor_Y = 0;
+	f_SpawnedActor_Z = 0;
+	b_SpawnedActor_Success = false;
+	n_SpawnedActor_TID = -3;	
+	
+	int n_SpawnAttempts;
+	int n_Angle_Adjustment_byte = 0;
+	int sign = -1; //0=1, 1=-1, 2=1
+	for (n_SpawnAttempts = 0; n_SpawnAttempts < 256; n_SpawnAttempts++)
+	{																											if (verbose) Log(s:"Spawn Attempt: ",d:n_SpawnAttempts);
+		//Even-Odd
+		sign = sign * -1; 																						if (verbose) Log(s:"Sign: ",d:sign);
+
+		if (n_SpawnAttempts > 0)
+		{
+			//Adjust the perceived Angle of the Player
+			//Alternating between left and right,
+			//Move out from the center 
+			n_Angle_Adjustment_byte = ((n_SpawnAttempts + 1) / 2) * n_AngleByte_Increment * sign;				if (verbose) Log(s:"n_Angle_Adjustment_byte: ",d:n_Angle_Adjustment_byte);
+			n_Spawn_vector = n_Spawn_vector_initial + n_Angle_Adjustment_byte;
+			if (n_Spawn_vector >= 256) { n_Spawn_vector = n_Spawn_vector - 256; }
+			else if (n_Spawn_vector < 0) { n_Spawn_vector = n_Spawn_vector + 256; }
+																												if (verbose) Log(s:"n_Spawn_vector: ",d:n_Spawn_vector);
+			if (b_Actor_FaceAwayFrom_Target) n_Facing_Vector = n_Spawn_vector;									if (verbose) Log(s:"n_Facing_vector: ",d:n_Facing_vector);			
+		}																										
+		int f_Spawn_vector = n_Spawn_vector << 8; 																if (verbose) Log(s:"f_Spawn_vector: ",f:f_Spawn_vector,s:" revs");
+		int f_Spawn_vector_x = cos(f_Spawn_vector);
+		int f_Spawn_vector_y = sin(f_Spawn_vector);																if (verbose) Log(s:"Spawn Vector Components: ",f:f_Spawn_vector_x,s:"x, ",f:f_Spawn_vector_y,s:"y");
+		
+		// Offset Position Relative to Target
+		int f_Target_Offset_x = FixedMul(f_Spawn_vector_x,f_Radius);
+		int f_Target_Offset_y = FixedMul(f_Spawn_vector_y,f_Radius);											if (verbose) Log(s:"Target Position Offset: ",f:f_Target_Offset_x,s:"x, ",f:f_Target_Offset_y,s:"y");
+				
+		// Absolute Position for Spawn		
+		int f_Actor_x = f_Actor_Target_x + f_Target_Offset_x;
+		int f_Actor_y = f_Actor_Target_y + f_Target_Offset_y;													if (verbose) Log(s:"Spawn Position: ",f:f_Actor_x,s:"x, ",f:f_Actor_y,s:"y");
+		
+		// Calculate the angle of the Actor so that it faces the Target once Spawned, if selected
+		int f_Actor_angle_rev;
+		if (b_Actor_FaceAwayFrom_Target) f_Actor_angle_rev = VectorAngle(f_Actor_x - f_Actor_Target_x, f_Actor_y - f_Actor_Target_y);
+		else f_Actor_angle_rev = VectorAngle(f_Actor_Target_x - f_Actor_x, f_Actor_Target_y - f_Actor_y);
+		int f_Actor_angle_byte = f_Actor_angle_rev * 256;
+		n_Facing_Vector = f_Actor_angle_byte >> 16; 															if (verbose) Log(s:"n_Facing_vector: ",d:n_Facing_vector);
+		
+		int actorsSpawned = Spawn(s_Actor_classname, f_Actor_x, f_Actor_y, f_Actor_Target_z, spawn_Actor_TID, n_Facing_Vector);
+		bool successfulSpawn = (actorsSpawned > 0);																if (verbose) Log(s:"Successful Spawn: ",d:successfulSpawn);
+		if (successfulSpawn)
+		{
+			
+			if (b_TeleportFog)
+				Spawn("TeleportFog", f_Actor_x, f_Actor_y, f_Actor_Target_z,UniqueTID(),0);
+			
+			//Return values
+			f_SpawnedActor_X = f_Actor_x;
+			f_SpawnedActor_Y = f_Actor_y;
+			f_SpawnedActor_Z = GetActorZ(spawn_Actor_TID);
+			b_SpawnedActor_Success = true;
+			n_SpawnedActor_TID = spawn_Actor_TID;																if (verbose) Log(s:"Spawned TID: ",d:spawn_Actor_TID);
+			return spawn_Actor_TID;
+		}
+	}// end of for
+	
+	return -3; // Error -3 Unsuccessful Spawn
+}
+
+function int BetterSpawn_NearPlayer(str s_Actor_classname, int playerNum, int f_Actor_Player_Radius_Offset, bool b_Actor_FaceAwayFrom_Player, int spawn_Actor_TID, bool b_TeleportFog)
+{
+	bool debug = GetCVAR("CV_b_SummonNearby_debug");
+	bool verbose = GetCVAR("CV_b_SummonNearby_verbose") && debug; 															if (verbose) Log(s:"BetterSpawn_NearPlayer(",s:s_Actor_classname,s:", ",d:playerNum,s:", ...)");
+
+	//Player Information
+	//Get Player Position as base position
+	bool validPlayerNumber = (playerNum == ConsolePlayerNumber()) || (playerNum > 0);
+	if (!validPlayerNumber) return -4;
+	SetActivatorToPlayer(playerNum);
+	int f_Player_X = GetActorX(0);
+	int f_Player_Y = GetActorY(0);
+	int f_Player_Z = GetActorZ(0);																				if (verbose) Log(s:"Player Info - #",d:playerNum,s:": ",n:playerNum,s:" @ ",f:f_Player_X,s:"x, ",f:f_Player_Y,s:"y, ",f:f_Player_Z,s:"z");
+	//Get the Angle of the player
+	//The angle is where they are looking
+	// References: https://zdoom.org/wiki/GetActorAngle, 
+	// https://zdoom.org/wiki/Definitions#Byte_angles
+	int f_Player_angle = GetActorAngle(0);																		if (verbose) Log(s:"f_Player_angle: ",f:f_Player_angle);
+	
+	return BetterSpawn(s_Actor_classname, f_Player_X, f_Player_Y, f_Player_Z, f_Player_angle, f_Actor_Player_Radius_Offset, b_Actor_FaceAwayFrom_Player, spawn_Actor_TID, b_TeleportFog);
+}
+function int BetterSpawn_NearConsolePlayer(str s_Actor_classname, int f_Actor_Player_Radius_Offset, bool b_Actor_FaceAwayFrom_Player, int spawn_Actor_TID, bool b_TeleportFog)
+{
+	bool debug = GetCVAR("CV_b_SummonNearby_debug");
+	bool verbose = GetCVAR("CV_b_SummonNearby_verbose") && debug; 															if (verbose) Log(s:"BetterSpawn_NearConsolePlayer(",s:s_Actor_classname,s:", ...)");
+	
+	return BetterSpawn_NearPlayer(s_Actor_classname, ConsolePlayerNumber(), f_Actor_Player_Radius_Offset, b_Actor_FaceAwayFrom_Player, spawn_Actor_TID, b_TeleportFog);
+}
+function int BetterSpawn_NearActor(str s_Actor_classname, int target_actor_TID, int f_Actor_Target_Radius_Offset, bool b_Actor_FaceAwayFrom_Target, int spawn_Actor_TID, bool b_TeleportFog)
+{
+	bool debug = GetCVAR("CV_b_SummonNearby_debug");
+	bool verbose = GetCVAR("CV_b_SummonNearby_verbose") && debug; 															if (verbose) Log(s:"BetterSpawn_NearActor(",s:s_Actor_classname,s:", ",d:target_actor_TID,s:", ...)");
+
+	//Actor Information
+	//Get Actor Position as base position
+	bool validActorNumber = (target_actor_TID > 0);
+	if (!validActorNumber) return -4;
+	int f_Actor_X = GetActorX(target_actor_TID);
+	int f_Actor_Y = GetActorY(target_actor_TID);
+	int f_Actor_Z = GetActorZ(target_actor_TID);																				if (verbose) Log(s:"Actor Info - #",d:target_actor_TID,s:" @ ",f:f_Actor_X,s:"x, ",f:f_Actor_Y,s:"y, ",f:f_Actor_Z,s:"z");
+	//Get the Angle of the Actor
+	//The angle is where they are looking
+	// References: https://zdoom.org/wiki/GetActorAngle, 
+	// https://zdoom.org/wiki/Definitions#Byte_angles
+	int f_Actor_angle = GetActorAngle(target_actor_TID);																		if (verbose) Log(s:"f_Actor_angle: ",f:f_Actor_angle);
+	
+	return BetterSpawn(s_Actor_classname, f_Actor_X, f_Actor_Y, f_Actor_Z, f_Actor_angle, f_Actor_Target_Radius_Offset, b_Actor_FaceAwayFrom_Target, spawn_Actor_TID, b_TeleportFog);
+}

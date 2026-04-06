@@ -1,0 +1,93 @@
+#library "SummonNearby"
+#include "zcommon.acs"
+#include "BetterSpawn.acs"
+/*
+SummonNearby.acs
+Powered by BetterSpawn.acs
+by Jeremy Tiggy
+
+The purpose of these scripts is to replace the "summon" and "summonfriendly"
+console commands with versions that have methods of reducing the frequency 
+at which they get stuck in walls, and methods to introduce some distance 
+between the actor and player so that it doesn't just pop right up in your 
+face. Adding Buddy version as well.
+*/
+
+function int BetterSpawn_SummonActorNearby(void)
+{	
+	// Determine Mode
+	// server noarchive int	CV_n_betterspawn_target_type
+	// Target type: 0 - ConsolePlayer, 1 - PlayerNumber, 2 - Point, 3 - Actor TID
+	int n_target_type = 0;
+	bool b_target_player = true;
+	
+	
+	// Load Settings
+	
+	// Radius Offset
+	// server float CV_f_betterspawn_player_radius
+	// server float CV_f_betterspawn_target_radius
+	int f_Actor_Player_Radius_Offset;
+	if (GetCVAR("CV_f_nearbySummonDistance") < 32.1) f_Actor_Player_Radius_Offset = 32.1;
+	else f_Actor_Player_Radius_Offset = GetCVAR("CV_f_nearbySummonDistance");
+	
+	// Teleport Fog
+	// server bool CV_b_betterspawn_teleportFog
+	bool b_TeleportFog = true;
+	
+	// Read Inputs
+	
+	// Get Actor Classname
+	// server noarchive string CV_s_betterspawn_classname
+	str s_Actor_classname = GetCVARString("CV_s_actorNameToSummonNearby");
+	bool b_Actor_classname_valid = (s_Actor_classname != "empty") && (s_Actor_classname != "");
+
+	// Facing towards reference or away from reference
+	// server noarchive bool CV_b_betterspawn_face_away
+	bool b_Actor_FaceAwayFrom_Player = false;
+	
+	// Desired TID of Actor Spawned
+	// server noarchive int	CV_n_betterspawn_target_TID
+	int spawn_Actor_TID = UniqueTID();
+	
+	//Call Proper Function
+	// Target type: 0 - ConsolePlayer
+	int spawned_Actor_TID = BetterSpawn_NearConsolePlayer(s_Actor_classname, f_Actor_Player_Radius_Offset, b_Actor_FaceAwayFrom_Player, spawn_Actor_TID, b_TeleportFog);	
+	return spawned_Actor_TID;
+}
+
+function void MakeBuddy(int tid)
+{
+	if (tid <= 0) return;
+	
+	SetActorProperty(tid, APROP_Friendly, TRUE);
+	SetActorState(tid, "See", true); // Force into hunting state
+	SetActorProperty(tid, APROP_ReactionTime, 1);
+	SetActorProperty(tid, APROP_Notarget, FALSE);	
+	SetActorFlag(tid, "NOBLOCKMONST", true);
+	
+	int f_extraSpeed = 11.0;
+	SetActorProperty(tid, APROP_Speed, f_extraSpeed);
+	Thing_Hate(tid, 0, 6);
+	int currPlayerCount = PlayerCount();
+	if (currPlayerCount > 1)
+	{
+		for (int j = 0; j < currPlayerCount; j++)
+		{
+			if (PlayerInGame(j) && !PlayerIsSpectator(j))
+			{
+				Thing_Hate(tid, j + 1, 6); // 5 = Hate exactly as teammates
+			}
+		}
+	}	
+	return;
+}
+
+script "SummonActorNearby" (void)
+{
+	int spawned_Actor_TID = BetterSpawn_SummonActorNearby();
+}
+script "SummonFriendlyActorNearby" (void)
+{
+	MakeBuddy( BetterSpawn_SummonActorNearby() );
+}

@@ -1,0 +1,76 @@
+#library "EventDataDefinitions"
+#include "zcommon.acs"
+
+/*CVARs
+// From GZDoom-REST API: Update of CVARs with Tikfinity Action & Event Data complete
+server noarchive bool		CV_b_API_dataReady = false;
+
+// From TikFinity-GZDoom_EventDataDefinitions
+user int CV_n_API_Reset_dataReady_ticks = 4; // Wait X ticks before resetting the CV_b_API_dataReady bit
+*/
+
+/*
+The function of this script is two-fold:
+1. 	Reset the dataReady bit after some time to allow other scripts that use this bit to 
+	be able to get done what they need to using that information.
+2. 	Demonstrate "rising edge one-shot" logic to be used in other mods.
+*/
+
+script "TikfinityEventDefinitionsOpen" OPEN NET {
+	
+	bool newData_ONS = false;
+	int dataReady_Ticks_Elapsed = 0;
+	int dataReady_Ticks_Setpoint = -1;
+	bool debug = false;
+	Log(s:"TikfinityEventData - Started");
+	while (1 > 0) {
+		//Debug
+		debug = GetCVAR("CV_b_TikfinityEventData_debug");
+		
+		// Read the dataReady bit
+		bool newData = GetCVAR("CV_b_API_dataReady");	if (debug) Log(s:"TikfinityEventData - CV_b_API_dataReady: ",d:newData);
+		
+		
+		// the variable readNewData is the rising edge one shot flag.
+		// the variable newData_ONS is called a memory bit.
+		// The memory bit is set at the end of the scan,
+		// so this condition is true exactly once until the dataReady bit is reset.
+		bool readNewData = newData && !newData_ONS;	if (debug) Log(s:"TikfinityEventData - readNewData: ",d:readNewData);
+		newData_ONS = newData;
+		if (readNewData) {
+			// On the rising edge oneshot, get the reset setpoint.
+			// Limit the value to between 4 and 35 ticks.
+			if (GetCVAR("CV_n_API_Reset_dataReady_ticks") < 4) { 
+				dataReady_Ticks_Setpoint = 4; 
+			}
+			else if (GetCVAR("CV_n_API_Reset_dataReady_ticks") > 35) {
+				dataReady_Ticks_Setpoint = 35;
+			}
+			else {
+				dataReady_Ticks_Setpoint = GetCVAR("CV_n_API_Reset_dataReady_ticks");
+			}
+			if (debug) Log(s:"TikfinityEventData - dataReady_Ticks_Setpoint: ",d:dataReady_Ticks_Setpoint);
+		} // end if (newdata)
+				
+		delay(1);
+		
+		// Don't count if theres no data
+		if (!newData) { dataReady_Ticks_Elapsed = 0; } 
+		// Count up if the dataReady bit is high and the setpoint not yet reached
+		if (newData && (dataReady_Ticks_Elapsed < dataReady_Ticks_Setpoint) ) {
+			dataReady_Ticks_Elapsed++;
+		}
+		if (debug) Log(s:"TikfinityEventData - dataReady_Ticks_Elapsed: ",d:dataReady_Ticks_Elapsed);
+		// If the setpoint is reached, reset the dataReady bit.
+		if (newData && (dataReady_Ticks_Elapsed >= dataReady_Ticks_Setpoint) ) {
+			if (debug) Log(s:"TikfinityEventData - resetting CV_b_API_dataReady");
+			SetCVAR("CV_b_API_dataReady",false); 
+			delay(1);
+		}
+		
+	} // end while
+}
+
+
+
+            

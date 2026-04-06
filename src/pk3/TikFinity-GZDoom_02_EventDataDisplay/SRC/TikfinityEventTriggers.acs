@@ -1,0 +1,86 @@
+#library "TikfinityEventTriggers"
+#include "zcommon.acs"
+
+//Print to console log if there is a change to a value
+
+script "TikfinityEventTriggersOpen" OPEN NET {
+	Log(s:"TikfinityEventTriggers - Started");
+	bool newData_ONS = false;
+	while (1 > 0) {
+		bool debug = GetCVAR("CV_b_TikfinityEventTriggers_debug");
+		bool newData = GetCVAR("CV_b_API_dataReady");	
+		bool readNewData = newData && !newData_ONS;	
+		bool printMessages = GetCVAR("CV_b_API_showTFmessages");
+		newData_ONS = newData;
+		
+		if (readNewData) {
+			if (debug) Log(s:"TikfinityEventTriggers - readNewData: ",d:readNewData);
+			if (debug) Log(s:"TikfinityEventTriggers - CV_b_API_showTFmessages:",d:GetCVAR("CV_b_API_showTFmessages"));
+			if (debug) Log(s:"TikfinityEventTriggers - printMessages:",d:printMessages);
+			int n_triggerTypeId = GetCVAR("CV_n_TF_triggerTypeId");		if (debug) Log(s:"TikfinityEventTriggers - CV_n_TF_triggerTypeId:",d:n_triggerTypeId);
+			if (printMessages) {
+				
+				str s_triggerType = "unknown";
+				bool makeChatSound = true;
+				switch (n_triggerTypeId) {
+					case 1: 
+						s_triggerType = "Shared";
+						Log(s:GetCVARString("CV_s_TF_username"),s:" shared the live.");
+						break;
+					case 2: 
+						s_triggerType = "Command";
+						Log(s:"\c*",s:GetCVARString("CV_s_TF_username"),s:": ",s:GetCVARString("CV_s_TF_comment"),s:"\c-");
+						break;
+					case 3:
+						s_triggerType = "Gifted";
+						Log(s:GetCVARString("CV_s_TF_username"),s:" ",s:s_triggerType,s:" ",d:GetCVAR("CV_n_TF_repeatCount"),s:" ",s:GetCVARString("CV_s_TF_giftName"),s:", worth ",d:GetCVAR("CV_n_TF_coins"),s:" coins!");
+						break;
+					case 4: 
+						s_triggerType = "Specific Gift";
+						Log(s:GetCVARString("CV_s_TF_username"),s:" gifts ",s:GetCVARString("CV_s_TF_giftName"),s:"!");
+						break;
+					case 6: 
+						s_triggerType = "Joined";
+						Log(s:GetCVARString("CV_s_TF_username"),s:" joined the live.");
+						break;
+					case 7: 
+						s_triggerType = "Likes";
+
+						Log(s:GetCVARString("CV_s_TF_username"),s:" sends ",d:GetCVAR("CV_n_TF_likeCount"),s:" Likes, totaling ",d:GetCVAR("CV_n_TF_totalLikeCount"),s:" so far.");
+						break;
+					case 9: 
+						s_triggerType = "Followed";
+						Log(s:GetCVARString("CV_s_TF_username"),s:" followed the creator.");
+						break;					
+					case 10: 
+						s_triggerType = "Subscribed";
+						Log(s:GetCVARString("CV_s_TF_username"),s:" ",s:s_triggerType,s:" for ",d:GetCVAR("CV_n_TF_subMonth"),s:" months!");
+						break;					
+					case 11: 
+						s_triggerType = "Chat";
+						Log(s:"\c*",s:GetCVARString("CV_s_TF_username"),s:": ",s:GetCVARString("CV_s_TF_comment"),s:"\c-");
+						break;					
+					case 12: 
+						s_triggerType = "Emoted";
+						Log(s:"\c*",s:GetCVARString("CV_s_TF_username"),s:": emote#",d:GetCVAR("CV_n_TF_emoteId"),s:"\c-");
+						break;
+					case 13: 
+						s_triggerType = "First User Activity";
+						Log(s:GetCVARString("CV_s_TF_username"),s:" has joined the chat.");
+						break;
+					default: 
+						s_triggerType = "Not Known";
+						makeChatSound = false;
+						break;
+				} //end switch
+				if (debug) Log(s:"TikfinityEventTriggers - makeChatSound:",d:makeChatSound);
+				if (makeChatSound) AmbientSound("misc/chat", 127);
+			} // end if (printMessages)
+		} // end if (newdata)
+		delay(1);
+	} // end while
+} // end script
+
+
+
+            

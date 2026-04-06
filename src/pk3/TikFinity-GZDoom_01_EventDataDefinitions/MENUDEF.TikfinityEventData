@@ -1,0 +1,61 @@
+// From Tikfinity:
+OptionMenu "TikfinityActionsAndEventsData"
+{
+	Title "Actions & Events Data From Tikfinity"
+	StaticText "- Action -"
+	TextField "Category ID", "CV_s_TF_categoryId"
+	TextField "Category Name","CV_s_TF_categoryName"
+	TextField "Action ID", "CV_s_TF_actionId"
+	TextField "Action Name", "CV_s_TF_actionName"
+	StaticText "- User -"
+	TextField "User ID", "CV_s_TF_userID"
+	TextField "User Name", "CV_s_TF_username"
+	TextField "User Nickname", "CV_s_TF_nickname"
+	TextField "User Profile Picture", "CV_s_TF_profilePictureUrl"
+	StaticText "- Event -"
+	NumberField "Trigger Id", "CV_n_TF_triggerTypeId"
+	Option 		"Trigger Type", "CV_n_TF_triggerTypeId", "triggerType"
+	StaticText "- Gift -"
+	NumberField "Gift ID", "CV_n_TF_giftId"
+	TextField "Gift Name", "CV_s_TF_giftName"
+	NumberField "Coins", "CV_n_TF_coins"
+	NumberField "Repeat Count", "CV_n_TF_repeatCount"
+	StaticText "- Likes -"
+	NumberField "Like Count", "CV_n_TF_likeCount"
+	NumberField "Total Like Count", "CV_n_TF_totalLikeCount"
+	StaticText "- Subscription -"
+	NumberField "Number of Months Subscribed", "CV_n_TF_subMonth"
+	StaticText "- Emote -"
+	NumberField "Emote ID", "CV_n_TF_emoteId"
+	StaticText "- Message or Command -"
+	TextField "Chat", "CV_s_TF_comment"
+	StaticText "- Tikfinity -"
+	NumberField "Tikfinity User ID", "CV_n_TF_tikfinityUserId"
+	TextField "Tikfinity Username", "CV_s_TF_tikfinityUsername"
+	StaticText "- Data Update Trigger -"
+	Option "Data Updated Signal from GZDoom-REST API", "CV_b_API_dataReady", "OnOff"
+	StaticText ""
+	NumberField "Ticks Elapsed until reset of Data Ready signal", "CV_n_API_Reset_dataReady_ticks"
+	Option "Debugging Messages", "CV_b_TikfinityEventData_debug", "OnOff"
+	
+	
+}
+	
+OptionValue "triggerType" {
+	1, "Share"
+	2, "Command"
+	3, "Gift"
+	4, "Specific Gift"
+	6, "Joined"
+	7, "Likes"
+	9, "Follow"
+	10, "Subscribed"
+	11, "Chat"
+	12, "Emote"
+	13, "First User Activity"
+}
+
+AddOptionMenu "OptionsMenu"
+{
+    Submenu "Tikfinity Actions & Events Data", "TikfinityActionsAndEventsData"
+}

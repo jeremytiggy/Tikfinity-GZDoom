@@ -1,0 +1,3 @@
+// Settings
+server bool CV_b_API_showTFmessages = true;
+server noarchive bool CV_b_TikfinityEventTriggers_debug = false;

@@ -1,0 +1,20 @@
+OptionMenu "SummonNearby"
+{
+	Title "Summon Nearby Actor Options"
+	StaticText "Usage Example - Summon zombieman:                                            "
+	StaticText "set CV_s_actorNameToSummonNearby zombieman;pukename SummonActorNearby        "
+	StaticText "Usage Example - Summon Caco-Buddy:                                           "
+	StaticText "set CV_s_actorNameToSummonNearby cacodemon;pukename SummonFriendlyActorNearby"
+	StaticText "Settings:"
+	Slider 		"Distance from Player", "CV_f_nearbySummonDistance", 0.0, 500.0, 5.0, 1
+	TextField "[Last] Actor Name", "CV_s_actorNameToSummonNearby"
+	StaticText "Commands:"
+	Command "> Test Spawn Actor            <", "pukename SummonActorNearby"
+	Command "> Test Spawn Friendly Actor   <", "pukename SummonFriendlyActorNearby"
+	Command "> Test Spawn Explosive Barrel <", "set CV_s_actorNameToSummonNearby explosivebarrel;pukename SummonActorNearby"
+	Command "> Test Spawn Cyber-Buddy      <", "set CV_s_actorNameToSummonNearby cyberdemon;pukename SummonFriendlyActorNearby"	
+}
+AddOptionMenu "OptionsMenu"
+{
+    Submenu "Summon Nearby...", "SummonNearby"
+}

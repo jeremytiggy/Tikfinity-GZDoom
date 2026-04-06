@@ -1,0 +1,29 @@
+// From Tikfinity Events & Actions:
+server noarchive string 	CV_s_TF_categoryId = "categoryId";
+server noarchive string 	CV_s_TF_categoryName = "categoryName";
+server noarchive string 	CV_s_TF_actionId = "actionId";
+server noarchive string 	CV_s_TF_actionName = "Action Name";
+server noarchive string 	CV_s_TF_userID = "userID";
+server noarchive string 	CV_s_TF_username = "username";
+server noarchive string 	CV_s_TF_nickname = "Nick Name";
+server noarchive string 	CV_s_TF_profilePictureUrl = "https://";
+server noarchive int		CV_n_TF_giftId = 0;
+server noarchive string		CV_s_TF_giftName = "Rose";
+server noarchive int 		CV_n_TF_coins = 999;
+server noarchive int		CV_n_TF_repeatCount = 0;
+server noarchive int		CV_n_TF_likeCount = 0;
+server noarchive int		CV_n_TF_totalLikeCount = 0;
+server noarchive int		CV_n_TF_subMonth = 0;
+server noarchive int		CV_n_TF_emoteId = 0;
+server noarchive string		CV_s_TF_comment = "chat message";
+server noarchive int 		CV_n_TF_triggerTypeId = 987;
+server noarchive int 		CV_n_TF_tikfinityUserId = 654;
+server noarchive string 	CV_s_TF_tikfinityUsername = "tikfinityUsername";
+
+// From GZDoom-REST API: Update of CVARs with Tikfinity Action & Event Data complete
+server noarchive bool		CV_b_API_dataReady = false;
+
+// From TikFinity-GZDoom_EventDataDefinitions
+server int CV_n_API_Reset_dataReady_ticks = 10; // Wait X ticks before resetting the CV_b_API_dataReady bit
+
+server noarchive bool CV_b_TikfinityEventData_debug = false;

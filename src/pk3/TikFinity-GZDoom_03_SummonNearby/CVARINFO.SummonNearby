@@ -1,0 +1,5 @@
+// SummonNearby
+server noarchive string CV_s_actorNameToSummonNearby = "empty"; // alias of CV_s_betterspawn_classname
+user 			 float	CV_f_nearbySummonDistance = 160.0; //puts the base just above the plasma rifle
+server noarchive bool	CV_b_SummonNearby_debug = false;
+server noarchive bool	CV_b_SummonNearby_verbose = false;

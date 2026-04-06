@@ -1,0 +1,47 @@
+// From Tikfinity:
+OptionMenu "TikfinityEventTriggers"
+{
+	Title "Event Data From Tikfinity"
+	StaticText "- Event -"
+	NumberField "Trigger Id", "CV_n_TF_triggerTypeId"
+	Option 		"Trigger Type", "CV_n_TF_triggerTypeId", "triggerType"
+	StaticText "- Gift -"
+	NumberField "Gift ID", "CV_n_TF_giftId"
+	TextField "Gift Name", "CV_s_TF_giftName"
+	NumberField "Coins", "CV_n_TF_coins"
+	NumberField "Repeat Count", "CV_n_TF_repeatCount"
+	StaticText "- Likes -"
+	NumberField "Like Count", "CV_n_TF_likeCount"
+	NumberField "Total Like Count", "CV_n_TF_totalLikeCount"
+	StaticText "- Subscription -"
+	NumberField "Number of Months Subscribed", "CV_n_TF_subMonth"
+	StaticText "- Emote -"
+	NumberField "Emote ID", "CV_n_TF_emoteId"
+	StaticText "- Message or Command -"
+	TextField "Chat", "CV_s_TF_comment"
+	StaticText "- Data Update Trigger -"
+	Option "Data Updated Signal from GZDoom-REST API", "CV_b_API_dataReady", "OnOff"
+	StaticText " "
+	Option "Enable Display Messages for Events with Trigger", "CV_b_API_showTFmessages", "OnOff"
+	Option "Enable Debugging Messages", "CV_b_TikfinityEventTriggers_debug", "OnOff"
+	
+}
+	
+OptionValue "triggerType" {
+	1, "Share"
+	2, "Command"
+	3, "Gift"
+	4, "Specific Gift"
+	6, "Joined"
+	7, "Likes"
+	9, "Follow"
+	10, "Subscribed"
+	11, "Chat"
+	12, "Emote"
+	13, "First User Activity"
+}
+
+AddOptionMenu "OptionsMenu"
+{
+    Submenu "Tikfinity Event & Trigger Display", "TikfinityEventTriggers"
+}
