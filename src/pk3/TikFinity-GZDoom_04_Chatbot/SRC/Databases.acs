@@ -1,0 +1,92 @@
+// Variables:
+int i_DB_Keys[64];
+int i_DB_Values[64]; 
+int i_DB_Size;
+int i_DB_LastIndex;
+int i_DB_Index;
+int i_DB_Key;
+int i_DB_Value;
+
+// Functions:
+function int DB_Key_to_Index (int Key)
+{
+	i_DB_Key = Key;
+	i_DB_Index = -1;
+	
+	i_DB_LastIndex = i_DB_Size - 1;
+	for (int i = 0; i <= i_DB_LastIndex; i++)
+	{
+		if ( (i_DB_Keys[i] == i_DB_Key) && (i_DB_Index == -1) )
+		{
+			i_DB_Index = i;
+		}
+		
+	}
+	return i_DB_Index;
+}
+
+#define ORDER_DESCENDING 0
+#define ORDER_ASCENDING 1
+function void DB_Values_Sort( bool order )
+{
+	i_DB_LastIndex = i_DB_Size - 1;
+	
+	//BubbleSort
+	bool BubbleSort_RankOK = 0;
+	while (!BubbleSort_RankOK)
+	{
+		int BubbleSort_Swaps = 0;
+		for (int a = 0; a<= i_DB_LastIndex; a++)
+		{
+			if (a != i_DB_LastIndex)
+			{
+				int b = a + 1;
+				int key_A = i_DB_Keys[a];
+				int key_B = i_DB_Keys[b];
+				int value_A = i_DB_Values[a];
+				int value_B = i_DB_Values[b];
+				
+				//descending. [0] is highest, [i_DB_LastIndex] is lowest
+				if ( (value_A < value_B) && (order == ORDER_DESCENDING) )
+				{
+					i_DB_Keys[a] = key_B;
+					i_DB_Keys[b] = key_A;
+					i_DB_Values[a] = value_B;
+					i_DB_Values[b] = value_A;
+					BubbleSort_Swaps++;
+				}
+				
+				//asscending. [0] is lowest, [i_DB_LastIndex] is highest
+				if ( (value_A < value_B) && (order == ORDER_DESCENDING) )
+				{
+					i_DB_Keys[a] = key_B;
+					i_DB_Keys[b] = key_A;
+					i_DB_Values[a] = value_B;
+					i_DB_Values[b] = value_A;
+					BubbleSort_Swaps++;
+				}
+			}
+		}
+		BubbleSort_RankOK = (BubbleSort_Swaps == 0);
+	}
+}
+
+// Usage Example:
+/*
+	i_DB_Size = i_ActivePlayersInfo_Count;
+	i_DB_LastIndex = i_DB_Size - 1;
+	
+	//Rank All Players Health
+	int p;
+	for (p = 0; p <= i_DB_LastIndex; p++)
+	{
+		i_DB_Keys[p] = i_ActivePlayersInfo_Numbers[p]; // Key: Player Number
+		i_DB_Values[p] = i_EachPlayerInfo_Health[p]; 	// Value: Health
+	}
+	DB_Values_Sort(ORDER_DESCENDING);
+	for (p = 0; p <= i_DB_LastIndex; p++)
+	{
+		i_ActivePlayersInfo_Rank_Health[p] = i_DB_Keys[p]; // Key: Player Number
+	}
+	int i_Healtiest_PlayerNumber = i_ActivePlayersInfo_Rank_Health[0];
+*/

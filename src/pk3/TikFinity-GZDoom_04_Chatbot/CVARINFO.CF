@@ -1,0 +1,344 @@
+// Tikfinity Interface (from EventDataDefinitions)
+// Already declared
+/*
+// From Tikfinity Events & Actions:
+server noarchive string 	CV_s_TF_categoryId = "categoryId";
+server noarchive string 	CV_s_TF_categoryName = "categoryName";
+server noarchive string 	CV_s_TF_actionId = "actionId";
+server noarchive string 	CV_s_TF_actionName = "Action Name";
+server noarchive string 	CV_s_TF_userID = "userID";
+server noarchive string 	CV_s_TF_username = "username";
+server noarchive string 	CV_s_TF_nickname = "Nick Name";
+server noarchive string 	CV_s_TF_profilePictureUrl = "https://";
+server noarchive int		CV_n_TF_giftId = 0;
+server noarchive string		CV_s_TF_giftName = "Rose";
+server noarchive int 		CV_n_TF_coins = 999;
+server noarchive int		CV_n_TF_repeatCount = 0;
+server noarchive int		CV_n_TF_likeCount = 0;
+server noarchive int		CV_n_TF_totalLikeCount = 0;
+server noarchive int		CV_n_TF_subMonth = 0;
+server noarchive int		CV_n_TF_emoteId = 0;
+server noarchive string		CV_s_TF_comment = "chat message";
+server noarchive int 		CV_n_TF_triggerTypeId = 987;
+server noarchive int 		CV_n_TF_tikfinityUserId = 654;
+server noarchive string 	CV_s_TF_tikfinityUsername = "tikfinityUsername";
+
+// From GZDoom-REST API: Update of CVARs with Tikfinity Action & Event Data complete
+server noarchive bool		CV_b_API_dataReady = false;
+*/
+
+
+// Add Chat Functions
+user bool	CV_b_CF_Received_Enable = true;
+user bool	CV_b_CF_Received_ColorCustom = false;
+user color 	CV_c_CF_Received_Color;
+user string CV_f_CF_Received_Font = "smallfont";
+user string CV_s_CF_Received_Text = "Chat";
+user string CV_s_CF_Received_Name = "Chatter";
+user bool	CV_b_CF_Received_TF = false;
+user int	CV_n_CF_Received_Style = 0; 	//0 - Print
+											//1 - HudCenter
+											
+
+
+
+
+server noarchive string		CV_s_TF_sanitized_user = "asciiOnlyNoEmoji";
+
+//From External Pipe API
+server noarchive string		CV_s_API_summon_username = "";
+server noarchive string 	CV_s_API_summon_classname = "";
+server noarchive bool 		CV_b_API_summon_buddy = false;
+server noarchive int 		CV_n_API_summon_size = 0;
+server noarchive int 		CV_n_API_summon_points = 0;
+
+
+// Streamer.Bot - Chatbot
+user bool 					CV_b_SB_Chatbot_Enable = true;
+user int					CV_n_SB_Chatbot_Prefix = 1; // 1: "Playername: ", 2: Custom
+user string					CV_s_SB_Chatbot_Prefix = "CHAT: ";
+
+server noarchive string		CV_s_SB_Chatbot_Message = "username does a thing"; // string to parse for Streamer.bot chatbot
+
+//For BetterSpawn: From action consoleCommand
+
+
+
+
+// BetterSpawn Control & Status
+// for use with puke 444
+server noarchive string CV_s_betterspawn_classname = "empty"; // since blank isn't an option, setting it to 'empty' is the next best thing.
+server noarchive int	CV_n_betterspawn_Target_TID = -1; //Target TID value of spawned actor
+server noarchive int	CV_n_betterspawn_Actual_TID = -1; // Actual TID of spawned actor
+server noarchive bool	CV_b_betterspawn_SpawnSuccess = false;
+// BetterSpawn Configuration
+user int CV_n_betterspawn_radialOffset = 64;
+user float CV_f_betterspawn_radialOffset = 64.0;
+user int CV_n_betterspawn_teleportfog = 1; // 0-Always Off, 1-Enabled (per call basis), 2-Always On
+
+// Debugging
+user noarchive bool CV_b_debug = false;
+user noarchive bool CV_b_verbose = true;
+
+
+// Simulator
+user int CV_n_simulator_ticks = 175;
+
+// Game Modes
+user int		CV_n_TF_PointsSource = 0;
+user bool		CV_b_TF_ShotClock = false;
+user int		CV_n_TF_ShotClock_Seconds = 20;
+user bool		CV_b_TF_ShotClock_Despawn = false;
+user bool		CV_b_TF_ShowModeAtLevelStart = true;
+
+
+// Monster Nametag
+user bool		CV_b_TF_nametagEnable = true;
+user int		CV_n_TF_nametagColorFriend = 0;
+user int		CV_n_TF_nametagColorFoe = 0;
+user bool 		CV_b_TF_nametagFontAuto = true;
+user float		CV_f_TF_nametagFontAutoSP = 0.5;
+user string		CV_f_TF_nametagFontAutoClose = "bigfont";
+user string		CV_f_TF_nametagFontAutoFar = "smallfont";
+user string		CV_s_TF_nametagFont = "bigfont";
+user int		CV_n_TF_nametagYoffset = 600;
+user float		CV_f_TF_nametagYoffset_pct = 0.0;
+user int 		CV_n_TF_nametagRange = 600;
+user bool		CV_b_TF_overheadMarkerEnable = true;
+user float		CV_f_TF_nametagIconRange_WU = 100.0; // Cutoff Distance for TikTok Logo
+user bool		CV_b_TF_nametagTikfinity = true;
+user float		CV_f_TF_overheadMarker_Offset1 = 50.0;
+user float		CV_f_TF_overheadMarker_Offset2 = 70.0;
+user float		CV_f_TF_overheadMarker_Offset3 = 105.0;
+user float		CV_f_TF_overheadMarker_Offset4 = 30.0;
+user int		CV_n_TF_nametagRenderCtMax = 5; //1 - closest, 5 max
+user int		CV_n_TF_markerRenderCtMax = 10; //1 - closest only, 10 max
+user int		CV_n_TF_nametagColorFoe1 = 0;
+user int		CV_n_TF_nametagColorFoe2 = 23;
+user int		CV_n_TF_nametagColorFoe3= 17;
+user int		CV_n_TF_nametagColorFoe4 = 6;
+user int		CV_n_TF_nametagColorFoe5 = 8;
+user int		CV_n_TF_nametagColorFriend1 = 3;
+user int		CV_n_TF_nametagColorFriend2 = 16;
+user int		CV_n_TF_nametagColorFriend3 = 25;
+user int		CV_n_TF_nametagColorFriend4 = 21;
+user int		CV_n_TF_nametagColorFriend5 = 7;
+
+
+
+// Obituary
+user bool		CV_b_TF_obituaryEnable = true;
+user string 	CV_s_TF_obituaryFont = "bigfont";
+user int		CV_n_TF_obituaryHUDcolor = 0;
+user float	CV_f_TF_obituaryX = 1.5;
+user float 	CV_f_TF_obituaryY = 0.5;
+user float 	CV_f_TF_obituaryHoldTime = 2.0;
+user float 	CV_f_TF_obituaryTypeTime = 0.1;
+user float 	CV_f_TF_obituaryFadeTime = 3.0;
+user bool CV_b_SB_AnnounceObitToChatbot = true;
+user bool CV_b_TF_PrintObitMessage = false;
+
+
+//Persistence
+user string cv_usr_s_00 = "";
+user int    cv_usr_i_00 = 0;
+user string cv_usr_s_01 = "";
+user int    cv_usr_i_01 = 0;
+user string cv_usr_s_02 = "";
+user int    cv_usr_i_02 = 0;
+user string cv_usr_s_03 = "";
+user int    cv_usr_i_03 = 0;
+user string cv_usr_s_04 = "";
+user int    cv_usr_i_04 = 0;
+user string cv_usr_s_05 = "";
+user int    cv_usr_i_05 = 0;
+user string cv_usr_s_06 = "";
+user int    cv_usr_i_06 = 0;
+user string cv_usr_s_07 = "";
+user int    cv_usr_i_07 = 0;
+user string cv_usr_s_08 = "";
+user int    cv_usr_i_08 = 0;
+user string cv_usr_s_09 = "";
+user int    cv_usr_i_09 = 0;
+user string cv_usr_s_10 = "";
+user int    cv_usr_i_10 = 0;
+user string cv_usr_s_11 = "";
+user int    cv_usr_i_11 = 0;
+user string cv_usr_s_12 = "";
+user int    cv_usr_i_12 = 0;
+user string cv_usr_s_13 = "";
+user int    cv_usr_i_13 = 0;
+user string cv_usr_s_14 = "";
+user int    cv_usr_i_14 = 0;
+user string cv_usr_s_15 = "";
+user int    cv_usr_i_15 = 0;
+user string cv_usr_s_16 = "";
+user int    cv_usr_i_16 = 0;
+user string cv_usr_s_17 = "";
+user int    cv_usr_i_17 = 0;
+user string cv_usr_s_18 = "";
+user int    cv_usr_i_18 = 0;
+user string cv_usr_s_19 = "";
+user int    cv_usr_i_19 = 0;
+user string cv_usr_s_20 = "";
+user int    cv_usr_i_20 = 0;
+user string cv_usr_s_21 = "";
+user int    cv_usr_i_21 = 0;
+user string cv_usr_s_22 = "";
+user int    cv_usr_i_22 = 0;
+user string cv_usr_s_23 = "";
+user int    cv_usr_i_23 = 0;
+user string cv_usr_s_24 = "";
+user int    cv_usr_i_24 = 0;
+user string cv_usr_s_25 = "";
+user int    cv_usr_i_25 = 0;
+user string cv_usr_s_26 = "";
+user int    cv_usr_i_26 = 0;
+user string cv_usr_s_27 = "";
+user int    cv_usr_i_27 = 0;
+user string cv_usr_s_28 = "";
+user int    cv_usr_i_28 = 0;
+user string cv_usr_s_29 = "";
+user int    cv_usr_i_29 = 0;
+user string cv_usr_s_30 = "";
+user int    cv_usr_i_30 = 0;
+user string cv_usr_s_31 = "";
+user int    cv_usr_i_31 = 0;
+user string cv_usr_s_32 = "";
+user int    cv_usr_i_32 = 0;
+user string cv_usr_s_33 = "";
+user int    cv_usr_i_33 = 0;
+user string cv_usr_s_34 = "";
+user int    cv_usr_i_34 = 0;
+user string cv_usr_s_35 = "";
+user int    cv_usr_i_35 = 0;
+user string cv_usr_s_36 = "";
+user int    cv_usr_i_36 = 0;
+user string cv_usr_s_37 = "";
+user int    cv_usr_i_37 = 0;
+user string cv_usr_s_38 = "";
+user int    cv_usr_i_38 = 0;
+user string cv_usr_s_39 = "";
+user int    cv_usr_i_39 = 0;
+user string cv_usr_s_40 = "";
+user int    cv_usr_i_40 = 0;
+user string cv_usr_s_41 = "";
+user int    cv_usr_i_41 = 0;
+user string cv_usr_s_42 = "";
+user int    cv_usr_i_42 = 0;
+user string cv_usr_s_43 = "";
+user int    cv_usr_i_43 = 0;
+user string cv_usr_s_44 = "";
+user int    cv_usr_i_44 = 0;
+user string cv_usr_s_45 = "";
+user int    cv_usr_i_45 = 0;
+user string cv_usr_s_46 = "";
+user int    cv_usr_i_46 = 0;
+user string cv_usr_s_47 = "";
+user int    cv_usr_i_47 = 0;
+user string cv_usr_s_48 = "";
+user int    cv_usr_i_48 = 0;
+user string cv_usr_s_49 = "";
+user int    cv_usr_i_49 = 0;
+user string cv_usr_s_50 = "";
+user int    cv_usr_i_50 = 0;
+user string cv_usr_s_51 = "";
+user int    cv_usr_i_51 = 0;
+user string cv_usr_s_52 = "";
+user int    cv_usr_i_52 = 0;
+user string cv_usr_s_53 = "";
+user int    cv_usr_i_53 = 0;
+user string cv_usr_s_54 = "";
+user int    cv_usr_i_54 = 0;
+user string cv_usr_s_55 = "";
+user int    cv_usr_i_55 = 0;
+user string cv_usr_s_56 = "";
+user int    cv_usr_i_56 = 0;
+user string cv_usr_s_57 = "";
+user int    cv_usr_i_57 = 0;
+user string cv_usr_s_58 = "";
+user int    cv_usr_i_58 = 0;
+user string cv_usr_s_59 = "";
+user int    cv_usr_i_59 = 0;
+user string cv_usr_s_60 = "";
+user int    cv_usr_i_60 = 0;
+user string cv_usr_s_61 = "";
+user int    cv_usr_i_61 = 0;
+user string cv_usr_s_62 = "";
+user int    cv_usr_i_62 = 0;
+user string cv_usr_s_63 = "";
+user int    cv_usr_i_63 = 0;
+user string cv_usr_s_64 = "";
+user int    cv_usr_i_64 = 0;
+user string cv_usr_s_65 = "";
+user int    cv_usr_i_65 = 0;
+user string cv_usr_s_66 = "";
+user int    cv_usr_i_66 = 0;
+user string cv_usr_s_67 = "";
+user int    cv_usr_i_67 = 0;
+user string cv_usr_s_68 = "";
+user int    cv_usr_i_68 = 0;
+user string cv_usr_s_69 = "";
+user int    cv_usr_i_69 = 0;
+user string cv_usr_s_70 = "";
+user int    cv_usr_i_70 = 0;
+user string cv_usr_s_71 = "";
+user int    cv_usr_i_71 = 0;
+user string cv_usr_s_72 = "";
+user int    cv_usr_i_72 = 0;
+user string cv_usr_s_73 = "";
+user int    cv_usr_i_73 = 0;
+user string cv_usr_s_74 = "";
+user int    cv_usr_i_74 = 0;
+user string cv_usr_s_75 = "";
+user int    cv_usr_i_75 = 0;
+user string cv_usr_s_76 = "";
+user int    cv_usr_i_76 = 0;
+user string cv_usr_s_77 = "";
+user int    cv_usr_i_77 = 0;
+user string cv_usr_s_78 = "";
+user int    cv_usr_i_78 = 0;
+user string cv_usr_s_79 = "";
+user int    cv_usr_i_79 = 0;
+user string cv_usr_s_80 = "";
+user int    cv_usr_i_80 = 0;
+user string cv_usr_s_81 = "";
+user int    cv_usr_i_81 = 0;
+user string cv_usr_s_82 = "";
+user int    cv_usr_i_82 = 0;
+user string cv_usr_s_83 = "";
+user int    cv_usr_i_83 = 0;
+user string cv_usr_s_84 = "";
+user int    cv_usr_i_84 = 0;
+user string cv_usr_s_85 = "";
+user int    cv_usr_i_85 = 0;
+user string cv_usr_s_86 = "";
+user int    cv_usr_i_86 = 0;
+user string cv_usr_s_87 = "";
+user int    cv_usr_i_87 = 0;
+user string cv_usr_s_88 = "";
+user int    cv_usr_i_88 = 0;
+user string cv_usr_s_89 = "";
+user int    cv_usr_i_89 = 0;
+user string cv_usr_s_90 = "";
+user int    cv_usr_i_90 = 0;
+user string cv_usr_s_91 = "";
+user int    cv_usr_i_91 = 0;
+user string cv_usr_s_92 = "";
+user int    cv_usr_i_92 = 0;
+user string cv_usr_s_93 = "";
+user int    cv_usr_i_93 = 0;
+user string cv_usr_s_94 = "";
+user int    cv_usr_i_94 = 0;
+user string cv_usr_s_95 = "";
+user int    cv_usr_i_95 = 0;
+user string cv_usr_s_96 = "";
+user int    cv_usr_i_96 = 0;
+user string cv_usr_s_97 = "";
+user int    cv_usr_i_97 = 0;
+user string cv_usr_s_98 = "";
+user int    cv_usr_i_98 = 0;
+user string cv_usr_s_99 = "";
+user int    cv_usr_i_99 = 0;
+
+

@@ -1,0 +1,218 @@
+//#library "BetterSpawn"
+//#include "zcommon.acs"
+
+// Debug
+
+
+//Player Coordinates
+int f_PlayerPosn_X;
+int f_PlayerPosn_Y;
+int f_PlayerPosn_Z;
+function void UpdatePlayerPositon (void)
+{
+	int cpn = ConsolePlayerNumber();
+	if (PlayerInGame(cpn) && !PlayerIsSpectator(cpn))
+	{
+		SetActivatorToPlayer(cpn);
+		f_PlayerPosn_X = GetActorX(0);
+		f_PlayerPosn_Y = GetActorY(0);
+		f_PlayerPosn_Z = GetActorZ(0);
+	}
+}//end of UpdatePlayerPositon()
+
+//Radius of the Actor Class
+//Force Spawn an actor of the Classname, get it's radius, delete it
+//Return values >=20, -1 is error
+function int n_GetActorClassnameRadius(str classname)
+{
+    //Log(s:"n_GetActorClassnameRadius(",s:classname,s:")");
+	int n_Actor_radius = -1;
+	
+	int tid = UniqueTID();
+    //Log(s:"Forcing Spawn: ",s:classname);
+	int countOfThingsSpawned = SpawnForced(classname, 0.0, 0.0, 0.0, tid);
+	//Log(s:"Things Spawned: ",d:countOfThingsSpawned);
+	if (countOfThingsSpawned > 0)
+	{
+		//Log(s:"GetActorProperty(",d:tid,s:", APROP_Radius) = ",d:GetActorProperty(tid, APROP_Radius),s:"d/int, ",f:GetActorProperty(tid, APROP_Radius),s:"f/fixed");
+		int f_Actor_radius = GetActorProperty(tid, APROP_Radius);
+		n_Actor_radius = f_Actor_radius >> 16;
+		//Log(s:"n_Actor_radius = ",d:f_Actor_radius,s:" >> 16 = ",d:n_Actor_radius);
+		
+		if (n_Actor_radius < 20)	{	n_Actor_radius = 20;	}	
+		//Log(s:"n_Actor_radius = ",d:n_Actor_radius,s:" >= 20");
+		Thing_Remove(tid);
+	}
+    return n_Actor_radius;
+}
+function int f_GetActorClassnameRadius(str classname)
+{
+    bool debug = GetCVAR("CV_b_debug");
+	bool verbose = GetCVAR("CV_b_verbose") && debug; 								if (verbose) Log(s:"n_GetActorClassnameRadius(",s:classname,s:")");
+	int f_Actor_radius = -1.0;	
+	int tid = UniqueTID();															if (verbose) Log(s:"tid: ",d:tid);
+	int countOfThingsSpawned = SpawnForced(classname, 0.0, 0.0, 0.0, tid);			if (verbose) Log(s:"SpawnForced(",s:classname,s:", 0.0, 0.0, 0.0, ",d:tid,s:"); countOfThingsSpawned: ",d:countOfThingsSpawned);
+	if (countOfThingsSpawned > 0)
+	{
+		
+		f_Actor_radius = GetActorProperty(tid, APROP_Radius); 					if (verbose) Log(s:"GetActorProperty(",d:tid,s:", APROP_Radius) = ",f:GetActorProperty(tid, APROP_Radius));
+		
+		if (f_Actor_radius < 20.0) f_Actor_radius = 20.0;							if (verbose) Log(s:"f_Actor_radius: ",f:f_Actor_radius);
+		
+		Thing_Remove(tid);
+	}
+    return f_Actor_radius;
+}
+
+
+
+int f_SpawnedActor_X;
+int f_SpawnedActor_Y;
+int f_SpawnedActor_Z;
+bool b_SpawnedActor_Success;
+int n_SpawnedActor_TID;
+function int SpawnNearPlayerByClassRadius(str classname, int newtid, bool fog)
+{
+	bool debug = GetCVAR("CV_b_debug");
+	bool verbose = GetCVAR("CV_b_verbose") && debug; 															if (verbose) Log(s:"SpawnNearPlayerByClassRadius(",s:classname,s:", ",d:newtid,s:", ",d:fog,s:")");
+	
+	//Initialize return values
+	f_SpawnedActor_X = 0;
+	f_SpawnedActor_Y = 0;
+	f_SpawnedActor_Z = 0;
+	b_SpawnedActor_Success = false;
+	n_SpawnedActor_TID = -1;	
+	int finalTID = -1; //Return value
+	
+	//Blank Class Protection
+	if (classname == "") return -2;
+	
+	
+	//Actor Class Information
+	//Get the radius of the Actor to be spawned in	
+	int f_Actor_radius = f_GetActorClassnameRadius(classname);													if (verbose) Log(s:"Actor Info - Class: ",s:classname,s:", Radius: ",f:f_Actor_radius,s:"f");	
+	//exit immediately on radius error
+	if (f_Actor_radius <= -1.0) return finalTID;  
+	//Calculate AngleByte step size
+	int f_RadialOffset_Extra = GetCVAR("CV_f_betterspawn_radialOffset"); 										if (verbose) Log(s:"Extra Radial Offset After CVAR read: ",f:f_RadialOffset_Extra,s:"f");
+	//Initial distance from player to start trying to Spawn the Actor
+	int f_RadialOffset_FromPlayer = f_Actor_radius + f_RadialOffset_Extra; 										if (verbose) Log(s:"Radial Offset from Player: ",f:f_Actor_radius,s:"f + ",f:f_RadialOffset_Extra,s:"f = ",f:f_RadialOffset_FromPlayer,s:"f");
+	
+	int f_Circumference = FixedMul(6.2831853, f_RadialOffset_FromPlayer);										if (verbose) Log(s:"Circumference of Radial Spawn Zone: ",f:f_Circumference);
+	int f_Actor_Diameter = FixedMul(f_Actor_Radius, 2.0);														if (verbose) Log(s:"Actor Diameter: ",f:f_Actor_Diameter);
+	int f_ArcRatio = FixedDiv(f_Actor_Diameter, f_Circumference);												if (verbose) Log(s:"Actor Radius to Circumference Ratio: ",f:f_ArcRatio);
+	int f_AngleBytes_per_Segment = FixedMul(f_ArcRatio, 256.0);													if (verbose) Log(s:"AngleBytes per Segment: ",f:f_AngleBytes_per_Segment,s:"f");
+	int n_AngleBytes_per_Segment = f_AngleBytes_per_Segment >> 16;												if (verbose) Log(s:"AngleBytes per Segment: ",d:n_AngleBytes_per_Segment,s:"d");
+	int n_AngleByte_Increment = n_AngleBytes_per_Segment;														if (verbose) Log(s:"AngleByte Increment per Unsuccessful Spawn: ",d:n_AngleByte_Increment,s:"d");
+	
+	//if the value of the 'newtid' argument is <=0, create a new TID
+	int spawn_Actor_TID;
+	if (newtid <= 0) spawn_Actor_TID = UniqueTID();
+	else spawn_Actor_TID = newtid;																				if (verbose) Log(s:"spawn_Actor_TID: ",d:spawn_Actor_TID);
+	
+	
+	//Player Information
+	//Get Player Position as base position
+	int cpn = ConsolePlayerNumber();
+	SetActivatorToPlayer(cpn);
+	int f_Player_X = GetActorX(0);
+	int f_Player_Y = GetActorY(0);
+	int f_Player_Z = GetActorZ(0);																				if (verbose) Log(s:"Player Info - ",f:f_Player_X,s:"x, ",f:f_Player_Y,s:"y, ",f:f_Player_Z,s:"z");
+	
+	int n_SpawnAttempts;
+	int n_Angle_Adjustment_byte = 0;
+	int sign = -1; //0=1, 1=-1, 2=1
+	for (n_SpawnAttempts = 0; n_SpawnAttempts < 256; n_SpawnAttempts++)
+	{																											if (verbose) Log(s:"Spawn Attempt: ",d:n_SpawnAttempts);
+		//Even-Odd
+		sign = sign * -1; 																						if (verbose) Log(s:"Sign: ",d:sign);
+
+		//Get the Angle of the player
+		//The angle is where they are looking
+		// References: https://zdoom.org/wiki/GetActorAngle, 
+		// https://zdoom.org/wiki/Definitions#Byte_angles
+		if (n_SpawnAttempts == 0)
+		{
+			int f_Player_angle = GetActorAngle(0);																if (verbose) Log(s:"f_Player_angle: ",f:f_Player_angle);
+			int n_Player_angle = f_Player_angle >> 8;															if (verbose) Log(s:"n_Player_angle: ",d:n_Player_angle);
+			int n_Spawn_vector = n_Player_angle;																if (verbose) Log(s:"n_Spawn_vector: ",d:n_Spawn_vector);
+			int f_Spawn_vector = f_Player_angle;																if (verbose) Log(s:"f_Spawn_vector: ",f:f_Spawn_vector);
+		}
+		if (n_SpawnAttempts > 0)
+		{
+			//Adjust the perceived Angle of the Player
+			//Alternating between left and right,
+			//Move out from the center 
+			n_Angle_Adjustment_byte = ((n_SpawnAttempts + 1) / 2) * n_AngleByte_Increment * sign;				if (verbose) Log(s:"n_Angle_Adjustment_byte: ",d:n_Angle_Adjustment_byte);
+			n_Spawn_vector = n_Player_angle + n_Angle_Adjustment_byte;
+			if (n_Spawn_vector >= 256) { n_Spawn_vector = n_Spawn_vector - 256; }
+			else if (n_Spawn_vector < 0) { n_Spawn_vector = n_Spawn_vector + 256; }
+			f_Spawn_vector = n_Spawn_vector << 8;
+		}																										if (verbose) Log(s:"Spawn Vector Direction: ",f:f_Spawn_vector,s:"units, ",d:n_Spawn_vector,s:"byteAngle");
+		
+		int f_Spawn_vector_x = cos(f_Spawn_vector);
+		int f_Spawn_vector_y = sin(f_Spawn_vector);																if (verbose) Log(s:"Spawn Vector Components: ",f:f_Spawn_vector_x,s:"x, ",f:f_Spawn_vector_y,s:"y");
+		
+		//Offset Position Relative to Player
+		
+		int f_Player_Offset_x = FixedMul(f_Spawn_vector_x,f_RadialOffset_FromPlayer);
+		int f_Player_Offset_y = FixedMul(f_Spawn_vector_y,f_RadialOffset_FromPlayer);							if (verbose) Log(s:"Player Position Offset: ",f:f_Player_Offset_x,s:"x, ",f:f_Player_Offset_y,s:"y");
+				
+		//Absolute Position for Spawn
+		
+		int f_Actor_x = f_Player_X + f_Player_Offset_x;
+		int f_Actor_y = f_Player_Y + f_Player_Offset_y;															if (verbose) Log(s:"Spawn Position: ",f:f_Actor_x,s:"x, ",f:f_Actor_y,s:"y");
+		
+		
+		//Calculate the angle of the Actor so that it faces the Player once Spawned
+		int f_Actor_angle_unit = VectorAngle(f_Player_X - f_Actor_x, f_Player_Y - f_Actor_y);
+		int f_Actor_angle_byte = f_Actor_angle_unit * 256;
+		int n_Actor_angle_byte = f_Actor_angle_byte >> 16;														if (verbose) Log(s:"Secondary Angle Info - Player: ",f:f_Player_angle,s:" unit-degrees, Actor: ",f:f_Actor_angle_unit,s:"f degrees, ",d:n_Actor_angle_byte,s:"d byteAngle");		
+			
+		int actorsSpawned = Spawn(classname, f_Actor_x, f_Actor_y, f_Player_Z, spawn_Actor_TID, n_Actor_angle_byte);
+		bool successfulSpawn = (actorsSpawned > 0);																if (verbose) Log(s:"Successful Spawn: ",d:successfulSpawn);
+		if (successfulSpawn)
+		{
+			finalTID = spawn_Actor_TID;																			if (verbose) Log(s:"Final TID: ",d:finalTID);
+			//Log(d:spawn_Actor_TID);
+			int fog_configuration = GetCVAR("CV_n_betterspawn_teleportfog");
+			bool fog_alwaysOn = fog_configuration == 2;
+			bool fog_alwaysOff = fog_configuration == 0;
+			bool fog_spawn = (fog || fog_alwaysOn) && !fog_alwaysOff;
+			if (fog_spawn)
+				Spawn("TeleportFog", f_Actor_x, f_Actor_y, f_Player_Z,UniqueTID(),0);
+			
+			//Return values
+			f_SpawnedActor_X = f_Actor_x;
+			f_SpawnedActor_Y = f_Actor_y;
+			f_SpawnedActor_Z = GetActorZ(finalTID);
+			b_SpawnedActor_Success = true;
+			n_SpawnedActor_TID = spawn_Actor_TID;	
+			return finalTID;
+		}
+	}// end of for
+	
+	//Log(s:"Spawn NOT SUCCESSFUL :(");
+	return finalTID;
+}
+
+
+//server noarchive string CV_s_betterspawn_classname = "empty"; // since blank isn't an option, setting it to 'empty' is the next best thing.
+//server noarchive int	CV_n_betterspawn_Target_TID = -1; //Target TID value of spawned actor
+//server noarchive int	CV_n_betterspawn_Actual_TID = -1; // Actual TID of spawned actor
+//server noarchive int	CV_b_betterspawn_SpawnSuccess = false;
+script 444 (void)
+{
+	bool debug = 	GetCVAR("CV_b_debug");
+	bool verbose = GetCVAR("CV_b_verbose") && debug; 								if (verbose) Log(s:"script 444(void)");
+	
+	SetCVAR("CV_n_betterspawn_Actual_TID",
+			SpawnNearPlayerByClassRadius(
+				GetCVARString("CV_s_betterspawn_classname"), 
+				GetCVAR("CV_n_betterspawn_Target_TID"),
+				TRUE
+			)
+	);
+	SetCVAR("CV_b_betterspawn_SpawnSuccess",b_SpawnedActor_Success);
+	delay(1);
+}

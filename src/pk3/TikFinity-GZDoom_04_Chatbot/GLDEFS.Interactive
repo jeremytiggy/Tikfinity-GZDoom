@@ -1,0 +1,6 @@
+brightmap sprite TKTOA0
+{
+  map "Brightmaps/Sprites/Indicators/BMTKTOA0.png" //the path must be full INCLUDING the file's extension if it has one
+}
+
+
