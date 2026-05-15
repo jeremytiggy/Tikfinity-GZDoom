@@ -1,5 +1,0 @@
-//
-GameInfo
-{
-    //AddEventHandlers = "BerserkPresenceHandler"
-}

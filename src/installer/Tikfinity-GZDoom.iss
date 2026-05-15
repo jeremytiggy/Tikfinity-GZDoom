@@ -2,16 +2,16 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 ; Non-commercial use only
 
-#define MyAppName "Tikfinity-GZDoom"
-#define MyAppVersion "1.4"
+#define MyAppName "TikFinity-GZDoom"
+#define MyAppVersion "2.4"
 #define MyAppPublisher "Jeremy Tiggy"
-#define MyAppURL "https://github.com/jeremytiggy/Tikfinity-GZDoom"
+#define MyAppURL "Https://github.com/JeremyTiggy/TikFinity-GZDoom"
 #define MyAppExeName "TikFinity-GZDoom.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{3252A7B9-C2D3-491B-A8DA-8DC654D60290}
+AppId={{4C67AB69-C622-40B5-875A-1DA1C050A825}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -19,15 +19,21 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+AllowRootDirectory=yes
+CreateAppDir=yes
+AlwaysShowDirOnReadyPage=yes
+DisableDirPage=yes
+DefaultDirName={sd}\{#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 DisableProgramGroupPage=yes
-LicenseFile=C:\dev\JeremyTiggy GitHub Repositories\Powershell-GZDoom_REST\LICENSE
-; Remove the following line to run in administrative install mode (install for all users).
-PrivilegesRequired=lowest
-OutputDir=C:\dev\JeremyTiggy GitHub Repositories\Powershell-GZDoom_REST\Releases\Install Scripts
-OutputBaseFilename=Tikfinity-GZDoom_v{#MyAppVersion}
-SetupIconFile=C:\dev\JeremyTiggy GitHub Repositories\Powershell-GZDoom_REST\Source\example\Icon.ico
+AlwaysShowGroupOnReadyPage=yes
+DefaultGroupName={#MyAppName}
+; Uncomment the following line to run in non administrative install mode (install for current user only).
+;PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog
+OutputDir=C:\Users\j.tighe\Documents\GitHub\Tikfinity-GZDoom\src\installer
+OutputBaseFilename=TikFinity-GZDoom Installer
+SetupIconFile=C:\Users\j.tighe\Documents\GitHub\Tikfinity-GZDoom\src\graphics\Icon.ico
 SolidCompression=yes
 WizardStyle=modern dynamic
 
@@ -35,17 +41,19 @@ WizardStyle=modern dynamic
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "C:\dev\JeremyTiggy GitHub Repositories\Powershell-GZDoom_REST\Releases\v{#MyAppVersion}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\dev\JeremyTiggy GitHub Repositories\Powershell-GZDoom_REST\Releases\v{#MyAppVersion}\GZDoom_REST_API_Actions_v*.ps1"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\dev\JeremyTiggy GitHub Repositories\Powershell-GZDoom_REST\Releases\v{#MyAppVersion}\lib\*"; DestDir: "{app}\lib\"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\dev\JeremyTiggy GitHub Repositories\Powershell-GZDoom_REST\Releases\v{#MyAppVersion}\gzdoom-4-14-2-windows-External-Pipe\*"; DestDir: "{app}\gzdoom-4-14-2-windows-External-Pipe\"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\j.tighe\Documents\GitHub\Tikfinity-GZDoom\build\Program Folder\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\j.tighe\Documents\GitHub\Tikfinity-GZDoom\build\Program Folder\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\DoomRunner (Tikfinity-GZDoom)"; Filename: "{app}\GZDoom\DoomRunner.exe"
+Name: "{group}\TikFinity-GZDoom Program Folder"; Filename: "{app}"
+Name: "{group}\Quick Start Guide"; Filename: "{app}\info\TikFinity-GZDoom Interface Script Quick Start Guide.pdf"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{autodesktop}\GZDoom External Pipe v4.14.2"; Filename: "{app}\gzdoom-4-14-2-windows-External-Pipe\gzdoom.exe"; Tasks: desktopicon
-
+Name: "{autodesktop}\DoomRunner (Tikfinity-GZDoom)"; Filename: "{app}\GZDoom\DoomRunner.exe"; Tasks: desktopicon
+Name: "{autodesktop}\TikFinity-GZDoom Program Folder"; Filename: "{app}"; Tasks: desktopicon
