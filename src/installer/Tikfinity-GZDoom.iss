@@ -3,7 +3,7 @@
 ; Non-commercial use only
 
 #define MyAppName "TikFinity-GZDoom"
-#define MyAppVersion "2.4"
+#define MyAppVersion "2.5"
 #define MyAppPublisher "Jeremy Tiggy"
 #define MyAppURL "Https://github.com/JeremyTiggy/TikFinity-GZDoom"
 #define MyAppExeName "TikFinity-GZDoom.exe"
@@ -57,3 +57,6 @@ Name: "{group}\Quick Start Guide"; Filename: "{app}\info\TikFinity-GZDoom Interf
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{autodesktop}\DoomRunner (Tikfinity-GZDoom)"; Filename: "{app}\GZDoom\DoomRunner.exe"; Tasks: desktopicon
 Name: "{autodesktop}\TikFinity-GZDoom Program Folder"; Filename: "{app}"; Tasks: desktopicon
+
+[Run]
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""Set-ExecutionPolicy -Scope CurrentUser Bypass -Force"""; Flags: runhidden
