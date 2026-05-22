@@ -44,7 +44,7 @@
         ]
     },
     "gameplay_options": {
-        "allow_cheats": false,
+        "allow_cheats": true,
         "dmflags1": 0,
         "dmflags2": 0,
         "dmflags3": 0,
